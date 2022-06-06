@@ -128,6 +128,11 @@ def java_wrap_cc(
 
     It's expected that the `swig` binary exists in the host's path.
 
+    Note that until https://github.com/bazelbuild/bazel/issues/3079 is fixed,
+    the resulting JAR may not automatically include a shared library of all
+    native deps. As a result, this macro also generates a shared library target
+    that you can include in your JAR resources.
+
     Args:
         name: target name.
         src: single .swig source file.
@@ -135,13 +140,14 @@ def java_wrap_cc(
         deps: C++ deps.
         module: optional name of Swig module.
 
+
     Generated targets:
         {name}: java_library
         lib{name}.so: cc_binary
     """
 
-    wrapper_name = "_" + name + "_wrapper"
-    cc_name = "_" + name + "_cc"
+    wrapper_name = name + "-wrapper"
+    cc_name = name + "-cc"
     outfile = name + ".cc"
     srcjar = name + ".srcjar"
     so_name = "lib%s.so" % name
@@ -178,7 +184,7 @@ def java_wrap_cc(
     native.java_library(
         name = name,
         srcs = [srcjar],
-        runtime_deps = [so_name],
+        deps = [cc_name],
         visibility = visibility,
         **kwargs
     )
