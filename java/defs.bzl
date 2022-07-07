@@ -61,11 +61,16 @@ def _java_wrap_cc_impl(ctx):
         swig_args.add("-module", ctx.attr.module)
     for include_path in depset(transitive = include_path_sets).to_list():
         swig_args.add("-I" + include_path)
+    for f in ctx.files.swig_includes:
+        swig_args.add("-l" + f.path)
+
     swig_args.add(src.path)
+
+    file_inputs = [src] + ctx.files.swig_includes
 
     ctx.actions.run(
         outputs = [outfile, java_files_dir],
-        inputs = depset([src], transitive = header_sets),
+        inputs = depset(file_inputs, transitive = header_sets),
         executable = ctx.executable._mkdir_wrapper,
         arguments = [swig_args],
         mnemonic = "SwigCompile",
@@ -90,6 +95,10 @@ It's expected that the `swig` binary exists in the host's path.
         "deps": attr.label_list(
             doc = "C++ dependencies.",
             providers = [CcInfo],
+        ),
+        "swig_includes": attr.label_list(
+            doc = "List of files that are included by the swig file",
+            allow_files = True,
         ),
         "package": attr.string(
             doc = "Package for generated Java.",
@@ -121,6 +130,7 @@ def java_wrap_cc(
         src,
         package,
         deps = [],
+        swig_includes = [],
         module = None,
         visibility = None,
         **kwargs):
@@ -133,6 +143,7 @@ def java_wrap_cc(
         src: single .swig source file.
         package: package of generated Java files.
         deps: C++ deps.
+        swig_includes: files used by the src
         module: optional name of Swig module.
 
     Generated targets:
@@ -155,6 +166,7 @@ def java_wrap_cc(
         deps = deps,
         module = module,
         visibility = ["//visibility:private"],
+        swig_includes = swig_includes,
         **kwargs
     )
 
