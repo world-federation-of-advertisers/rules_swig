@@ -14,6 +14,9 @@
 
 """Build definitions for SWIG Java."""
 
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_java//java:defs.bzl", "java_library")
+
 def _create_src_jar(ctx, java_runtime_info, input_dir, output_jar):
     jar_args = ctx.actions.args()
     jar_args.add("cf", output_jar)
@@ -29,7 +32,6 @@ def _create_src_jar(ctx, java_runtime_info, input_dir, output_jar):
     )
 
 def _java_wrap_cc_impl(ctx):
-    name = ctx.attr.name
     src = ctx.file.src
     outfile = ctx.outputs.outfile
 
@@ -134,6 +136,8 @@ def java_wrap_cc(
         package: package of generated Java files.
         deps: C++ deps.
         module: optional name of Swig module.
+        visibility: standard attribute.
+        **kwargs: additional arguments to pass to the resulting target.
 
     Generated targets:
         {name}: java_library
@@ -158,7 +162,7 @@ def java_wrap_cc(
         **kwargs
     )
 
-    native.cc_library(
+    cc_library(
         name = cc_name,
         srcs = [outfile],
         deps = deps + ["@bazel_tools//tools/jdk:jni"],
@@ -167,7 +171,7 @@ def java_wrap_cc(
         **kwargs
     )
 
-    native.cc_binary(
+    cc_binary(
         name = so_name,
         deps = [cc_name],
         linkshared = True,
@@ -175,7 +179,7 @@ def java_wrap_cc(
         **kwargs
     )
 
-    native.java_library(
+    java_library(
         name = name,
         srcs = [srcjar],
         runtime_deps = [so_name],
