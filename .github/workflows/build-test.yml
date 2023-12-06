@@ -25,12 +25,26 @@ on:
 jobs:
   build-test:
     name: Build and test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out revision
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        
+      - name: Set up Bazel
+        run: |
+          mkdir -p ~/.local/bin
+          bazelisk_path="$(which bazelisk)"
+          ln -s "${bazelisk_path}" ~/.local/bin/bazel
 
-      - name: Bazel build and test
-        uses: world-federation-of-advertisers/actions/bazel-build-test@v1.3.0
-        with:
-          workspace-path: .
+      - name: Bazel build
+        run: |
+          bazel build //...
+
+      - name: Bazel test
+        id: run-tests
+        run: |
+          bazel test //... || (( $? == 4 ))
+      
+      - name: Upload Bazel testlogs
+        if: failure() && steps.run-tests.outcome == 'failure'
+        uses: world-federation-of-advertisers/actions/bazel-upload-testlogs@v2
