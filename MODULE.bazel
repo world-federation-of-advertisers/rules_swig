@@ -1,0 +1,13 @@
+module(
+    name = "rules_swig",
+    repo_name = "wfa_rules_swig",
+)
+
+bazel_dep(
+    name = "rules_cc",
+    version = "0.0.9",
+)
+bazel_dep(
+    name = "rules_java",
+    version = "7.2.0",
+)
