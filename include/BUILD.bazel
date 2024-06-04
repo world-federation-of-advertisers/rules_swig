@@ -1,0 +1,3 @@
+filegroup(
+    name = "typemaps",
+    srcs = ["typemaps.i"])
