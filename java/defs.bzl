@@ -15,6 +15,7 @@
 """Build definitions for SWIG Java."""
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_java//java:defs.bzl", "java_library")
 
 def _create_src_jar(ctx, java_runtime_info, input_dir, output_jar):
